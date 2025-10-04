@@ -10,3 +10,4 @@ The dataset and the model weights are available here: link to figshare repo will
 
 Usage:
    e.g. python train.py --lr 0.0005 --output_dir Batch32_lr00005_epoch20 --data_dir data_dir --batch_size 32 --num_epochs 20 --model_type resnet
+   e.g. python Predict.py --model_path model_path --test_root test_root --model_type resnet --results_dir results_dir
