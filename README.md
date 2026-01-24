@@ -8,7 +8,6 @@ Dataset 1-3 and Tephritid26 are available here: link to figshare repo will be ad
 
 Prepare the environment as listed in the requirements.txt before running the scripts.
 
-**Usage:**
 **Training:**
 e.g. python Train.py --lr 0.0005 --output_dir "directory_of_results" --data_dir "directory_of_dataset" --batch_size 32 --num_epochs 20 --model_type resnet
 
