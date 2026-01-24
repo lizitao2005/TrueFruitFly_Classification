@@ -8,6 +8,7 @@ from PIL import Image
 import os
 import json
 from tqdm import tqdm
+import argparse
 
 class GradCAM:
     def __init__(self, model, target_layer):
@@ -153,27 +154,56 @@ def process_test_set(test_dir, output_dir, model, target_layer, class_names, num
 
 
 def main():
-    test_dir = "test_dir"  
-    output_dir = "output_dir"  
-    model_path = "model.pth"   
+    parser = argparse.ArgumentParser(description='Grad-CAM visualization for ConvNeXt model')
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    parser.add_argument('--test_dir', type=str, default='test_dir', 
+                       help='Directory containing test images (default: test_dir)')
+    parser.add_argument('--output_dir', type=str, default='output_dir',
+                       help='Directory to save Grad-CAM results (default: output_dir)')
+    parser.add_argument('--model_path', type=str, default='model.pth',
+                       help='Path to trained model file (default: model.pth)')
+    parser.add_argument('--num_classes', type=int, default=26,
+                       help='Number of classes in the model (default: 26)')
+    parser.add_argument('--num_images_per_class', type=int, default=10,
+                       help='Number of images to process per class (default: 10, use -1 for all)')
+    parser.add_argument('--class_names_file', type=str, default=None,
+                       help='JSON file containing class names (if not provided, uses default)')
+    parser.add_argument('--device', type=str, default=None,
+                       help='Device to use (cuda or cpu), if not specified auto-detects')
     
-    num_classes = 26  
+    args = parser.parse_args()
+    if args.device:
+        device = torch.device(args.device)
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if args.class_names_file and os.path.exists(args.class_names_file):
+        with open(args.class_names_file, 'r') as f:
+            class_names = json.load(f)
+    else:
+        class_names = [
+            "1001", "1002", "1003", "1005", "1006", "1007", "1009", "1010", 
+            "1011", "1012", "1013", "1018", "1019", "1020", "1021", "1022", 
+            "1024", "1025", "1026", "1027", "1028", "1029", "1030", "1031", 
+            "1032", "1034"
+        ]
+    print(f"Using device: {device}")
+    print(f"Test directory: {args.test_dir}")
+    print(f"Output directory: {args.output_dir}")
+    print(f"Model path: {args.model_path}")
+    print(f"Number of classes: {args.num_classes}")
+    print(f"Number of images per class: {args.num_images_per_class}")
+    print(f"Number of class names provided: {len(class_names)}")
     
-
-    class_names = [
-        "1001", "1002", "1003","1005","1006","1007","1009","1010","1011","1012","1013","1018","1019","1020","1021","1022","1024","1025","1026","1027","1028","1029","1030","1031","1032","1034"
-    ]  
-
-    model = load_custom_convnext_model(model_path, num_classes, device)
+    #load models
+    model = load_custom_convnext_model(args.model_path, args.num_classes, device)
     model.to(device)
-    print("Model structure:")
-    print(model)
+    print("Model loaded successfully.")
     
-    target_layer = model.features[-1][-1].block[0] 
-
-    process_test_set(test_dir, output_dir, model, target_layer, class_names, num_images_per_class=10)
+    #setting layers for Grad-CAM
+    target_layer = model.features[-1][-1].block[0]
+    
+    process_test_set(args.test_dir, args.output_dir, model, target_layer, 
+                     class_names, num_images_per_class=args.num_images_per_class)
 
 if __name__ == "__main__":
     main()
