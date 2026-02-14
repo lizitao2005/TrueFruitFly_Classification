@@ -202,6 +202,3 @@ python Grad-CAM.py --test_dir ./test_images --output_dir ./gradcam_results --mod
 
 ---
 
-## License
-
-See repository for license information.
